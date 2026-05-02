@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -563,7 +564,7 @@
   <main>
     <section class="panel">
       <h2>投料編輯台</h2>
-      <div class="section-note">手動投料、快速研判、即時產出。先生成中文情報草稿，編輯修訂完成後，再送英文完整翻譯。</div>
+      <div class="section-note">手動投料、快速研判、即時產出。連結與參考文字可擇一填寫；先生成中文情報草稿，編輯修訂完成後，再送英文完整翻譯。</div>
 
       <div class="dashboard-strip">
         <div class="metric">
@@ -596,7 +597,7 @@
 
         <label for="webhookUrl">中文情報 Make Webhook URL</label>
         <input id="webhookUrl" type="url" placeholder="貼上中文情報 Make Custom Webhook URL" />
-        <div class="hint">第一條 Make 流程：網頁投料 → OpenAI 產生中文情報 → 回傳到網頁。</div>
+        <div class="hint">第一條 Make 流程：網頁投料 → OpenAI 產生中文情報 → 回傳到網頁。連結與參考文字可擇一填寫。</div>
 
         <div style="height: 12px;"></div>
 
@@ -636,13 +637,13 @@
 
         <div class="field">
           <label for="url">連結</label>
-          <input id="url" type="url" placeholder="https://..." />
+          <input id="url" type="url" placeholder="https://...（可選，若已有參考文字可不填）" />
         </div>
       </div>
 
       <div class="field">
         <label for="referenceText">參考文字</label>
-        <textarea id="referenceText" placeholder="貼上新聞、社群貼文、逐字稿、截圖轉文字或你的整理內容"></textarea>
+        <textarea id="referenceText" placeholder="貼上新聞、社群貼文、逐字稿、截圖轉文字或你的整理內容（可選，若已有連結可不填）"></textarea>
       </div>
 
       <div class="field">
@@ -753,7 +754,7 @@
 
     function validatePayload(payload) {
       if (!payload.source_name) return "請填寫來源。";
-      if (!payload.reference_text) return "請貼上參考文字。";
+      if (!payload.url && !payload.reference_text) return "請至少填寫連結或參考文字其中一項。";
       return "";
     }
 
