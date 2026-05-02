@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台灣輿情情報系統</title>
+  <style>
+    :root {
+      --bg: #f3f8fb;
+      --bg-soft: #edf5f9;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: rgba(255, 255, 255, 0.95);
+      --line: rgba(52, 118, 145, 0.12);
+      --line-strong: rgba(29, 156, 194, 0.28);
+      --text: #173847;
+      --text-2: #2b5363;
+      --muted: #6d8791;
+      --blue: #247cff;
+      --blue-soft: #5ea7ff;
+      --cyan: #18bfd3;
+      --teal: #1eb6a7;
+      --green: #35c992;
+      --danger: #df6177;
+      --ok: #239a67;
+      --warning: #e9a343;
+      --shadow: 0 22px 52px rgba(35, 93, 119, 0.10);
+      --shadow-soft: 0 10px 26px rgba(35, 93, 119, 0.06);
+      --radius: 22px;
+      --radius-sm: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(36, 124, 255, 0.11), transparent 18%),
+        radial-gradient(circle at 88% 10%, rgba(53, 201, 146, 0.10), transparent 20%),
+        linear-gradient(180deg, #f4f9fc 0%, #f7fbfd 46%, #eef5f8 100%);
+      letter-spacing: 0.01em;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(24, 191, 211, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24, 191, 211, 0.045) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.70), transparent 92%);
+    }
+
+    header {
+      padding: 26px 30px 10px;
+    }
+
+    .header-shell {
+      border: 1px solid rgba(73, 156, 186, 0.16);
+      background: linear-gradient(135deg, rgba(255,255,255,0.90), rgba(247,252,255,0.82));
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+    }
+
+    .header-inner {
+      padding: 22px 26px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .headline-wrap {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .badge-mark {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--cyan), var(--green));
+      box-shadow: 0 16px 30px rgba(36, 124, 255, 0.18);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: #123544;
+    }
+
+    .subtitle {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    .editor-note-line {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #416170;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .editor-note-line span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .editor-note-line span::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      box-shadow: 0 0 8px rgba(24, 191, 211, 0.18);
+    }
+
+    .top-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .meta-chip {
+      padding: 9px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(73, 156, 186, 0.15);
+      color: #4a6f7d;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .status-box {
+      min-width: 250px;
+      background: rgba(255,255,255,0.80);
+      border: 1px solid rgba(73, 156, 186, 0.15);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .status-caption {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .status-pill {
+      font-size: 14px;
+      font-weight: 800;
+      color: #2d5968;
+    }
+
+    main {
+      padding: 14px 30px 30px;
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel), rgba(255,255,255,0.80));
+      border: 1px solid rgba(73, 156, 186, 0.14);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      min-height: 560px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: -46px;
+      right: -42px;
+      width: 170px;
+      height: 170px;
+      background: radial-gradient(circle, rgba(24, 191, 211, 0.10), transparent 68%);
+      pointer-events: none;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      bottom: -36px;
+      left: -26px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(53, 201, 146, 0.09), transparent 70%);
+      pointer-events: none;
+    }
+
+    .panel h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #143748;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel h2::before {
+      content: "";
+      width: 10px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--blue), var(--cyan), var(--green));
+      box-shadow: 0 0 12px rgba(24, 191, 211, 0.18);
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.62;
+      margin: -4px 0 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      border: 1px solid rgba(73, 156, 186, 0.12);
+      border-radius: 18px;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.84), rgba(248,252,255,0.70));
+      box-shadow: var(--shadow-soft);
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .metric .v {
+      margin-top: 7px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #1d4251;
+    }
+
+    .metric .s {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #5c8190;
+      line-height: 1.45;
+    }
+
+    .config-box, .intel-mini-card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.86), rgba(248,252,255,0.74));
+      border: 1px solid rgba(73, 156, 186, 0.12);
+      border-radius: 18px;
+      padding: 15px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      z-index: 1;
+    }
+
+    .config-box::before, .intel-mini-card::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 0;
+      height: 3px;
+      border-radius: 0 0 999px 999px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+      opacity: 0.78;
+    }
+
+    .mini-head, .result-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mini-title, .result-label {
+      font-size: 13px;
+      color: #285062;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .mini-tag {
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #237887;
+      background: rgba(24, 191, 211, 0.07);
+      border: 1px solid rgba(24, 191, 211, 0.14);
+    }
+
+    .field {
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #4b7280;
+      margin-bottom: 7px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid rgba(73, 156, 186, 0.16);
+      border-radius: 15px;
+      padding: 12px 13px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      color: var(--text);
+      background: rgba(255,255,255,0.88);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+      box-shadow: inset 0 1px 2px rgba(41, 94, 116, 0.03);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #8ca6b0;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(24, 191, 211, 0.42);
+      box-shadow: 0 0 0 4px rgba(24, 191, 211, 0.10), 0 10px 26px rgba(36, 124, 255, 0.07);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.72;
+    }
+
+    .preview {
+      white-space: pre-wrap;
+      line-height: 1.74;
+      border: 1px solid rgba(73, 156, 186, 0.14);
+      border-radius: 18px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,252,255,0.80));
+      min-height: 300px;
+      font-size: 14px;
+      color: var(--text-2);
+      overflow-wrap: anywhere;
+      position: relative;
+      box-shadow: inset 0 1px 2px rgba(41, 94, 116, 0.03);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button {
+      border: 0;
+      border-radius: 15px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+      letter-spacing: 0.01em;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.98;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      box-shadow: 0 14px 26px rgba(36, 124, 255, 0.16);
+    }
+
+    .btn-secondary {
+      color: #1b5f68;
+      background: linear-gradient(135deg, rgba(24, 191, 211, 0.10), rgba(53, 201, 146, 0.12));
+      border: 1px solid rgba(24, 191, 211, 0.16);
+    }
+
+    .btn-ghost {
+      color: #476d79;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(73, 156, 186, 0.12);
+    }
+
+    .btn-danger {
+      color: #c04f67;
+      background: rgba(255, 238, 241, 0.92);
+      border: 1px solid rgba(223, 97, 119, 0.16);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.56;
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 15px;
+      font-size: 13px;
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .message.ok {
+      display: block;
+      background: rgba(226, 249, 240, 0.94);
+      color: #22895d;
+      border: 1px solid rgba(35, 154, 103, 0.16);
+    }
+
+    .message.err {
+      display: block;
+      background: rgba(255, 240, 243, 0.94);
+      color: #c14c65;
+      border: 1px solid rgba(223, 97, 119, 0.16);
+    }
+
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--green));
+      box-shadow: 0 0 10px rgba(24, 191, 211, 0.22);
+      vertical-align: middle;
+    }
+
+    @media (max-width: 1080px) {
+      main { grid-template-columns: 1fr; }
+      .dashboard-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 720px) {
+      header { padding: 18px 16px 6px; }
+      main { padding: 12px 16px 24px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .dashboard-strip { grid-template-columns: 1fr; }
+      .panel { padding: 16px; min-height: auto; }
+      .headline-wrap { align-items: flex-start; }
+      h1 { font-size: 24px; }
+      .status-box { min-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-shell">
+      <div class="header-inner">
+        <div class="title-row">
+          <div>
+            <div class="headline-wrap">
+              <div class="badge-mark">⌁</div>
+              <div>
+                <h1>台灣輿情情報系統</h1>
+                <div class="subtitle">INTELLIGENCE DESK / CHINESE REVIEW / ENGLISH TRANSLATION</div>
+              </div>
+            </div>
+
+            <div class="editor-note-line">
+              <span>科技感介面語言</span>
+              <span>總編輯台式資訊編排</span>
+              <span>功能不變，流程不變</span>
+            </div>
+
+            <div class="top-meta">
+              <div class="meta-chip">監測範圍：財經・政治・產業・社群</div>
+              <div class="meta-chip">工作流：投料 → 中文情報 → 人工修訂 → 英文完整翻譯</div>
+              <div class="meta-chip">介面風格：科技感 × 總編輯台混合版</div>
+            </div>
+          </div>
+
+          <div class="status-box">
+            <div class="status-caption">System Status</div>
+            <div class="status-pill" id="connectionStatus">尚未設定 Make Webhook</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>投料編輯台</h2>
+      <div class="section-note">手動投料、快速研判、即時產出。連結與參考文字可擇一填寫；先生成中文情報草稿，編輯修訂完成後，再送英文完整翻譯。</div>
+
+      <div class="dashboard-strip">
+        <div class="metric">
+          <div class="k">Desk Mode</div>
+          <div class="v">Editorial</div>
+          <div class="s">符合總編輯台的工作節奏</div>
+        </div>
+        <div class="metric">
+          <div class="k">AI Status</div>
+          <div class="v">Ready</div>
+          <div class="s">中文情報與英文翻譯雙流程</div>
+        </div>
+        <div class="metric">
+          <div class="k">Workflow</div>
+          <div class="v">Two-Step</div>
+          <div class="s">先修中文，再翻英文</div>
+        </div>
+        <div class="metric">
+          <div class="k">Output</div>
+          <div class="v">Bilingual</div>
+          <div class="s">中英雙結果同頁呈現</div>
+        </div>
+      </div>
+
+      <div class="config-box">
+        <div class="mini-head">
+          <div class="mini-title">系統連線設定</div>
+          <div class="mini-tag">Webhook Config</div>
+        </div>
+
+        <label for="webhookUrl">中文情報 Make Webhook URL</label>
+        <input id="webhookUrl" type="url" placeholder="貼上中文情報 Make Custom Webhook URL" />
+        <div class="hint">第一條 Make 流程：網頁投料 → OpenAI 產生中文情報 → 回傳到網頁。連結與參考文字可擇一填寫。</div>
+
+        <div style="height: 12px;"></div>
+
+        <label for="translateWebhookUrl">英文報告 Make Webhook URL</label>
+        <input id="translateWebhookUrl" type="url" placeholder="貼上英文報告 Make Custom Webhook URL" />
+        <div class="hint">第二條 Make 流程：修訂後中文情報 → OpenAI 忠實翻譯英文 → 回傳到網頁。</div>
+
+        <div style="height: 12px;"></div>
+
+        <label for="similarityWebhookUrl">全網雷同檢查 Make Webhook URL</label>
+        <input id="similarityWebhookUrl" type="url" placeholder="貼上 Gemini 全網雷同檢查 Make Custom Webhook URL" />
+        <div class="hint">第三條 Make 流程：中文情報 → Gemini 全網搜尋雷同檢查＋改寫建議 → 回傳到網頁。</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="category">類別</label>
+          <select id="category">
+            <option value="財經">財經</option>
+            <option value="政治">政治</option>
+            <option value="產業">產業</option>
+            <option value="社群">社群</option>
+            <option value="國安">國安</option>
+            <option value="國際">國際</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="priority">優先級</label>
+          <select id="priority">
+            <option value="high">high</option>
+            <option value="medium">medium</option>
+            <option value="low">low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="sourceName">來源</label>
+          <input id="sourceName" placeholder="例如：中央社、臉書、YouTube、PTT" />
+        </div>
+
+        <div class="field">
+          <label for="url">連結</label>
+          <input id="url" type="url" placeholder="https://...（可選，若已有參考文字可不填）" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="referenceText">參考文字</label>
+        <textarea id="referenceText" placeholder="貼上新聞、社群貼文、逐字稿、截圖轉文字或你的整理內容（可選，若已有連結可不填）"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="editorNote">編輯備註</label>
+        <textarea id="editorNote" placeholder="例如：請從國安角度分析／請聚焦產業鏈影響／這裡需要標示待查證" style="min-height: 100px;"></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" onclick="saveConfig()">儲存 Webhook</button>
+        <button class="btn-ghost" onclick="buildPreview()">生成預覽</button>
+        <button class="btn-primary" onclick="sendToMake()">送出情報分析</button>
+        <button class="btn-danger" onclick="clearForm()">清空欄位</button>
+      </div>
+
+      <div id="message" class="message"></div>
+    </section>
+
+    <section class="panel">
+      <h2>情報輸出區</h2>
+      <div class="section-note">預覽送出內容後，取得中文情報草稿；中文修訂完成，再送至英文流程，忠實翻譯並保留原文結構。</div>
+
+      <div class="intel-mini-card">
+        <div class="result-header">
+          <div class="result-label">送出內容預覽</div>
+          <div class="mini-tag">Input Preview</div>
+        </div>
+        <div id="preview" class="preview" style="min-height: 200px;">尚未產生預覽。</div>
+        <div class="actions">
+          <button class="btn-ghost" onclick="copyPreview()">複製預覽</button>
+        </div>
+      </div>
+
+      <div class="intel-mini-card">
+        <div class="result-header">
+          <div class="result-label"><span class="live-dot"></span>中文情報結果／可修訂</div>
+          <div class="mini-tag">Chinese Draft</div>
+        </div>
+        <textarea id="aiResult" class="preview" style="min-height: 320px; width: 100%;">尚未產生 AI 結果。</textarea>
+        <div class="actions">
+          <button class="btn-secondary" onclick="copyResult()">複製中文情報</button>
+          <button class="btn-primary" onclick="sendSimilarityCheck()">全網雷同檢查</button>
+          <button class="btn-primary" onclick="sendToTranslate()">修訂完成，翻譯成英文主管報告</button>
+          <button class="btn-ghost" onclick="clearResult()">清除中文結果</button>
+        </div>
+      </div>
+
+      <div class="intel-mini-card">
+        <div class="result-header">
+          <div class="result-label"><span class="live-dot"></span>全網雷同檢查結果</div>
+          <div class="mini-tag">Similarity Check</div>
+        </div>
+        <div id="similarityResult" class="preview" style="min-height: 320px;">尚未產生全網雷同檢查結果。</div>
+        <div class="actions">
+          <button class="btn-secondary" onclick="copySimilarityResult()">複製雷同檢查結果</button>
+          <button class="btn-ghost" onclick="clearSimilarityResult()">清除雷同檢查</button>
+        </div>
+      </div>
+
+      <div class="intel-mini-card" style="margin-bottom: 0;">
+        <div class="result-header">
+          <div class="result-label"><span class="live-dot"></span>英文主管報告</div>
+          <div class="mini-tag">English Report</div>
+        </div>
+        <div id="englishResult" class="preview" style="min-height: 320px;">尚未產生英文報告。</div>
+        <div class="actions">
+          <button class="btn-secondary" onclick="copyEnglishResult()">複製英文報告</button>
+          <button class="btn-ghost" onclick="clearEnglishResult()">清除英文報告</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedWebhook = localStorage.getItem("makeWebhookUrl") || "";
+      const savedTranslateWebhook = localStorage.getItem("translateWebhookUrl") || "";
+      const savedSimilarityWebhook = localStorage.getItem("similarityWebhookUrl") || "";
+      document.getElementById("webhookUrl").value = savedWebhook;
+      document.getElementById("translateWebhookUrl").value = savedTranslateWebhook;
+      document.getElementById("similarityWebhookUrl").value = savedSimilarityWebhook;
+      updateConnectionStatus();
+    });
+
+    function updateConnectionStatus() {
+      const webhook = document.getElementById("webhookUrl").value.trim();
+      const translateWebhook = document.getElementById("translateWebhookUrl").value.trim();
+      const similarityWebhook = document.getElementById("similarityWebhookUrl").value.trim();
+      const status = document.getElementById("connectionStatus");
+      const count = [webhook, translateWebhook, similarityWebhook].filter(Boolean).length;
+      if (count === 3) {
+        status.textContent = "三條 Webhook 已設定";
+        status.style.color = "#239a67";
+      } else if (count > 0) {
+        status.textContent = `已設定 ${count} / 3 條 Webhook`;
+        status.style.color = "#d08b1e";
+      } else {
+        status.textContent = "尚未設定 Make Webhook";
+        status.style.color = "#6d8791";
+      }
+    }
+
+    function saveConfig() {
+      const webhook = document.getElementById("webhookUrl").value.trim();
+      const translateWebhook = document.getElementById("translateWebhookUrl").value.trim();
+      const similarityWebhook = document.getElementById("similarityWebhookUrl").value.trim();
+      if (webhook) localStorage.setItem("makeWebhookUrl", webhook);
+      if (translateWebhook) localStorage.setItem("translateWebhookUrl", translateWebhook);
+      if (similarityWebhook) localStorage.setItem("similarityWebhookUrl", similarityWebhook);
+      if (!webhook && !translateWebhook && !similarityWebhook) return showMessage("請至少貼上一個 Make Webhook URL。", "err");
+      updateConnectionStatus();
+      showMessage("Webhook 已儲存。", "ok");
+    }
+
+    function getPayload() {
+      return {
+        input_id: `manual_${Date.now()}`,
+        created_at: new Date().toLocaleString("zh-TW", { hour12: false }),
+        category: document.getElementById("category").value,
+        priority: document.getElementById("priority").value,
+        source_name: document.getElementById("sourceName").value.trim(),
+        url: document.getElementById("url").value.trim(),
+        reference_text: document.getElementById("referenceText").value.trim(),
+        your_note: document.getElementById("editorNote").value.trim(),
+        status: "new"
+      };
+    }
+
+    function validatePayload(payload) {
+      if (!payload.source_name) return "請填寫來源。";
+      if (!payload.url && !payload.reference_text) return "請至少填寫連結或參考文字其中一項。";
+      return "";
+    }
+
+    function buildPreview() {
+      const payload = getPayload();
+      const text = `類別：${payload.category}\n優先級：${payload.priority}\n來源：${payload.source_name}\n連結：${payload.url || "未提供"}\n\n參考文字：\n${payload.reference_text || "未填寫"}\n\n編輯備註：\n${payload.your_note || "未填寫"}`;
+      document.getElementById("preview").textContent = text;
+      return text;
+    }
+
+    async function sendToMake() {
+      const webhook = document.getElementById("webhookUrl").value.trim();
+      if (!webhook) return showMessage("請先貼上並儲存中文情報 Make Webhook URL。", "err");
+
+      const payload = getPayload();
+      const error = validatePayload(payload);
+      if (error) return showMessage(error, "err");
+
+      buildPreview();
+      document.getElementById("aiResult").value = "AI 正在整理情報，請稍候…";
+
+      try {
+        const response = await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        let resultText = "";
+
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+          resultText = data.result || data.text || data.message || JSON.stringify(data, null, 2);
+        } else {
+          resultText = await response.text();
+        }
+
+        if (!response.ok) {
+          throw new Error(resultText || `Make 回傳錯誤：${response.status}`);
+        }
+
+        document.getElementById("aiResult").value = resultText || "Make 已收到資料，但尚未回傳內容。請確認 Make Scenario 最後是否有 Webhook Response 模組。";
+        showMessage("中文情報已回傳到網頁。", "ok");
+      } catch (err) {
+        document.getElementById("aiResult").value = "送出失敗。";
+        showMessage(`送出失敗：${err.message}`, "err");
+      }
+    }
+
+
+    async function sendSimilarityCheck() {
+      const webhook = document.getElementById("similarityWebhookUrl").value.trim();
+      if (!webhook) return showMessage("請先貼上並儲存全網雷同檢查 Make Webhook URL。", "err");
+
+      const chineseDraft = document.getElementById("aiResult").value.trim();
+      if (!chineseDraft || chineseDraft === "尚未產生 AI 結果。" || chineseDraft === "送出失敗。") {
+        return showMessage("請先產生中文情報，再進行全網雷同檢查。", "err");
+      }
+
+      const payload = {
+        check_id: `similarity_${Date.now()}`,
+        checked_at: new Date().toLocaleString("zh-TW", { hour12: false }),
+        category: document.getElementById("category").value,
+        priority: document.getElementById("priority").value,
+        source_name: document.getElementById("sourceName").value.trim(),
+        url: document.getElementById("url").value.trim(),
+        reference_text: document.getElementById("referenceText").value.trim(),
+        revised_chinese_intel: chineseDraft,
+        editor_note: document.getElementById("editorNote").value.trim(),
+        output_type: "web_similarity_check"
+      };
+
+      document.getElementById("similarityResult").textContent = "Gemini 正在進行全網雷同檢查，請稍候…";
+
+      try {
+        const response = await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        let resultText = "";
+
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+          resultText = data.result || data.text || data.message || JSON.stringify(data, null, 2);
+        } else {
+          resultText = await response.text();
+        }
+
+        if (!response.ok) {
+          throw new Error(resultText || `Make 回傳錯誤：${response.status}`);
+        }
+
+        document.getElementById("similarityResult").textContent = resultText || "Make 已收到資料，但尚未回傳雷同檢查結果。請確認 Scenario 3 最後是否有 Webhook Response 模組。";
+        showMessage("全網雷同檢查已回傳到網頁。", "ok");
+      } catch (err) {
+        document.getElementById("similarityResult").textContent = "全網雷同檢查失敗。";
+        showMessage(`全網雷同檢查失敗：${err.message}`, "err");
+      }
+    }
+
+    async function sendToTranslate() {
+      const webhook = document.getElementById("translateWebhookUrl").value.trim();
+      if (!webhook) return showMessage("請先貼上並儲存英文報告 Make Webhook URL。", "err");
+
+      const chineseDraft = document.getElementById("aiResult").value.trim();
+      if (!chineseDraft || chineseDraft === "尚未產生 AI 結果。" || chineseDraft === "送出失敗。") {
+        return showMessage("請先產生並修訂中文情報，再送出英文翻譯。", "err");
+      }
+
+      const payload = {
+        report_id: `report_${Date.now()}`,
+        translated_at: new Date().toLocaleString("zh-TW", { hour12: false }),
+        category: document.getElementById("category").value,
+        priority: document.getElementById("priority").value,
+        source_name: document.getElementById("sourceName").value.trim(),
+        url: document.getElementById("url").value.trim(),
+        revised_chinese_intel: chineseDraft,
+        editor_note: document.getElementById("editorNote").value.trim(),
+        output_type: "english_translation"
+      };
+
+      document.getElementById("englishResult").textContent = "AI 正在翻譯英文報告，請稍候…";
+
+      try {
+        const response = await fetch(webhook, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        let resultText = "";
+
+        if (contentType.includes("application/json")) {
+          const data = await response.json();
+          resultText = data.result || data.text || data.message || JSON.stringify(data, null, 2);
+        } else {
+          resultText = await response.text();
+        }
+
+        if (!response.ok) {
+          throw new Error(resultText || `Make 回傳錯誤：${response.status}`);
+        }
+
+        document.getElementById("englishResult").textContent = resultText || "Make 已收到資料，但尚未回傳英文內容。請確認 Make Scenario 最後是否有 Webhook Response 模組。";
+        showMessage("英文報告已回傳到網頁。", "ok");
+      } catch (err) {
+        document.getElementById("englishResult").textContent = "英文報告產生失敗。";
+        showMessage(`英文報告產生失敗：${err.message}`, "err");
+      }
+    }
+
+    function clearForm() {
+      ["sourceName", "url", "referenceText", "editorNote"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("preview").textContent = "尚未產生預覽。";
+      showMessage("表單已清空。", "ok");
+    }
+
+    async function copyPreview() {
+      const text = document.getElementById("preview").textContent;
+      if (!text || text === "尚未產生預覽。") buildPreview();
+      await navigator.clipboard.writeText(document.getElementById("preview").textContent);
+      showMessage("預覽內容已複製。", "ok");
+    }
+
+    async function copyResult() {
+      const text = document.getElementById("aiResult").value;
+      if (!text || text === "尚未產生 AI 結果。") return showMessage("目前沒有中文情報可複製。", "err");
+      await navigator.clipboard.writeText(text);
+      showMessage("中文情報已複製。", "ok");
+    }
+
+    function clearResult() {
+      document.getElementById("aiResult").value = "尚未產生 AI 結果。";
+      showMessage("中文結果已清除。", "ok");
+    }
+
+
+    async function copySimilarityResult() {
+      const text = document.getElementById("similarityResult").textContent;
+      if (!text || text === "尚未產生全網雷同檢查結果。") return showMessage("目前沒有雷同檢查結果可複製。", "err");
+      await navigator.clipboard.writeText(text);
+      showMessage("雷同檢查結果已複製。", "ok");
+    }
+
+    function clearSimilarityResult() {
+      document.getElementById("similarityResult").textContent = "尚未產生全網雷同檢查結果。";
+      showMessage("雷同檢查結果已清除。", "ok");
+    }
+
+    async function copyEnglishResult() {
+      const text = document.getElementById("englishResult").textContent;
+      if (!text || text === "尚未產生英文報告。") return showMessage("目前沒有英文報告可複製。", "err");
+      await navigator.clipboard.writeText(text);
+      showMessage("英文報告已複製。", "ok");
+    }
+
+    function clearEnglishResult() {
+      document.getElementById("englishResult").textContent = "尚未產生英文報告。";
+      showMessage("英文報告已清除。", "ok");
+    }
+
+    function showMessage(text, type) {
+      const msg = document.getElementById("message");
+      msg.textContent = text;
+      msg.className = `message ${type}`;
+      setTimeout(() => { msg.className = "message"; }, 5000);
+    }
+  </script>
+</body>
+</html>
